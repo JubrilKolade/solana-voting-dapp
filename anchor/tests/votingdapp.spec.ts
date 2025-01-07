@@ -7,17 +7,32 @@ import {Votingdapp} from '../target/types/votingdapp';
 import { Voting } from '../target/types/voting'
 
 
+
 const IDL = require('../target/idl/voting.json');
 
 const votingAddress = new PublicKey("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF")
 
 describe('Votingdapp', () => {
 
-  it('Initialize Poll', async () => {
-    const context = await startAnchor("", [{name: "voting", programId: votingAddress}], []);
-    const provider = new BankrunProvider(context);
+  let context;
+  let provider;
+  let votingProgram;
 
-    const votingProgram = new Program<Voting> (
+  beforeAll(async () => {
+    context = await startAnchor("", [{name: "voting", programId: votingAddress}], []);
+    provider = new BankrunProvider(context);
+
+    votingProgram = new Program<Voting> (
+      IDL,
+      provider,
+    );
+  })
+
+  it('Initialize Poll', async () => {
+    context = await startAnchor("", [{name: "voting", programId: votingAddress}], []);
+    provider = new BankrunProvider(context);
+
+    votingProgram = new Program<Voting> (
       IDL,
       provider,
     );
@@ -38,5 +53,10 @@ describe('Votingdapp', () => {
 
     console.log(poll);
 
+    expect(poll.pollId.toNumber()).toEqual(1);
+    expect(poll.description).toEqual("What s your favorite type of peanut butter?");
+    expect(poll.pollStart.toNumber()).toBeLessThan(poll.pollEnd.toNumber());
+
   });
+
 });
